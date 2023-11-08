@@ -249,6 +249,10 @@ int main(void)
         data2.pwm[i] = 12000;
     }
 
+    uint8_t charged = 0; // 1:充電完了 0:充電未完
+    uint8_t broken = 0; // 1:IGBT破損 0:正常
+    uint8_t loaded = 0; //  1:装填されている 0:装填されていない
+    uint8_t empty = 0; // 送信機に弾切れ通知するなら1
 
     //SPI2_CLOCK_SetLow();
     while (1)
@@ -257,10 +261,6 @@ int main(void)
 //        LCD_i2C_cmd(0x80);
 //        sprintf(buf, "%6d", dc++);
 //        LCD_i2C_data(buf);
-        uint8_t charged = 0; // 1:充電完了 0:充電未完
-        uint8_t broken = 0; // 1:IGBT破損 0:正常
-        uint8_t loaded = 0; //  1:装填されている 0:装填されていない
-        uint8_t empty = 0; // 送信機に弾切れ通知するなら1
         HL16 data_back;
         data_back.HL = (data_ok.HL & 0x0fff); // 送信機に送り返す値
         
@@ -337,11 +337,20 @@ int main(void)
             if (data_ok.HL & 0x8000) {
                 charged = 1;
             }
+            else {
+                charged = 0;
+            }
             if (data_ok.HL & 0x4000) {
                 broken = 1;
             }
+            else {
+                broken = 0;
+            }
             if (data_ok.HL & 0x2000) {
                 loaded = 1;
+            }
+            else {
+                loaded = 0;
             }
 
             // 充電系送信
@@ -428,7 +437,6 @@ int main(void)
                 else {
                     // 充電OFF
                     empty = 0;
-                    broken = 0;
                     mode_charger = 0;
                     servo_close();
                 }
