@@ -92,8 +92,6 @@ typedef enum
 {
     TEMP1,//Channel Name:AN0   Assigned to:Shared Channel
     TEMP2,//Channel Name:AN1   Assigned to:Shared Channel
-    TEMP3,//Channel Name:AN4   Assigned to:Shared Channel
-    TEMP4,//Channel Name:AN5   Assigned to:Shared Channel
     BATTERY,//Channel Name:AN24   Assigned to:Shared Channel
 } ADC1_CHANNEL;
 
@@ -390,14 +388,8 @@ inline static uint16_t ADC1_ConversionResultGet( ADC1_CHANNEL channel )
         case TEMP2:
                 result = ADC1BUF1;
                 break;
-        case TEMP3:
-                result = ADC1BUF2;
-                break;
-        case TEMP4:
-                result = ADC1BUF3;
-                break;
         case BATTERY:
-                result = ADC1BUF4;
+                result = ADC1BUF2;
                 break;
         default:
                 break;
@@ -727,16 +719,16 @@ typedef enum
  */
 typedef enum 
 {
-    ADC1_SAMPLING_SOURCE_TMR5  =  0x4,
-    ADC1_SAMPLING_SOURCE_PWM3  =  0x2,
     ADC1_SAMPLING_SOURCE_PWM2  =  0x1,
-    ADC1_SAMPLING_SOURCE_AUTO  =  0x7,
+    ADC1_SAMPLING_SOURCE_TMR5  =  0x4,
     ADC1_SAMPLING_SOURCE_PWM1  =  0x0,
-    ADC1_SAMPLING_SOURCE_CTMU  =  0x6,
-    ADC1_SAMPLING_SOURCE_INT0  =  0x1,
     ADC1_SAMPLING_SOURCE_PWM_PRIMARY  =  0x3,
+    ADC1_SAMPLING_SOURCE_PWM3  =  0x2,
     ADC1_SAMPLING_SOURCE_MANUAL  =  0x0,
     ADC1_SAMPLING_SOURCE_TMR3  =  0x2,
+    ADC1_SAMPLING_SOURCE_CTMU  =  0x6,
+    ADC1_SAMPLING_SOURCE_INT0  =  0x1,
+    ADC1_SAMPLING_SOURCE_AUTO  =  0x7,
 } ADC1_SAMPLING_SOURCE;
 
 /** ADC Conversion Channel Type Definition

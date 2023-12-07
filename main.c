@@ -44,8 +44,6 @@ typedef union tagPWM4 {
 // AD変換値 DMAセットされる
 uint16_t temp1 = 0;
 uint16_t temp2 = 0;
-uint16_t temp3 = 0;
-uint16_t temp4 = 0;
 uint16_t battery = 0;
 
 #define TIMEOUT 1000 /* 受信タイムアウト */
@@ -65,7 +63,7 @@ PWM4 data; // SPI受信格納先
  // bit12 予備
  // bit11-0 充電現在電圧
 uint16_t cnt_err = 0; // ERROR 連続回数
-HL16 data_ok; // 正常に受信できた最後のデーター 0:強制停止
+//HL16 data_ok; // 正常に受信できた最後のデーター 0:強制停止
 uint8_t charge = 0; // 1:充電ON受信 0:充電OFF受信
 uint8_t charge0 = 0; // 直前の charge
 
@@ -139,21 +137,6 @@ void spi_send(void) {
     SPI_DATA_SetLow();
     SPI2_DATA_SetLow();
     SPI3_OUT_SetLow();
-
-    // データー化けチェック
-    if (data.pwm[0] == data.pwm[3]) {
-        if (data.pwm[0] == data.pwm[2]) {
-            if (data.pwm[0] == data.pwm[1]) {
-                data_ok.HL = data.pwm[0];
-                cnt_err = 0;
-            }
-        }
-    }
-    cnt_err ++;
-    if (cnt_err >= MAX_CNT_ERR) {
-        cnt_err = MAX_CNT_ERR;
-        data_ok.HL = 0;
-    }
 }
 
 
@@ -192,14 +175,14 @@ void int_timer(void) {
 
 // 装填サーボ開
 void servo_open(void) {
-    data1.pwm[1] = 12000 + 2200;
-    data1.pwm[2] = 12000 - 2200;
+    data1.pwm[0] = 12000 - 2200;
+    data1.pwm[3] = 12000 + 2200;
 }
 
 // 装填サーボ閉
 void servo_close(void) {
-    data1.pwm[1] = 12000 - 2800;
-    data1.pwm[2] = 12000 + 2800;
+    data1.pwm[0] = 12000 + 2800;
+    data1.pwm[3] = 12000 - 2800;
 }
 
 
@@ -231,7 +214,6 @@ int main(void)
     //LCD_i2C_cmd(0x80);
     //LCD_i2C_data("ABCDE");
 
-    data_ok.HL = 0;
     fired = 0;
             
     uint8_t id = 0; // 応答ID
@@ -253,6 +235,7 @@ int main(void)
     uint8_t broken = 0; // 1:IGBT破損 0:正常
     uint8_t loaded = 0; //  1:装填されている 0:装填されていない
     uint8_t empty = 0; // 送信機に弾切れ通知するなら1
+    HL16 data_back;
 
     //SPI2_CLOCK_SetLow();
     while (1)
@@ -261,8 +244,7 @@ int main(void)
 //        LCD_i2C_cmd(0x80);
 //        sprintf(buf, "%6d", dc++);
 //        LCD_i2C_data(buf);
-        HL16 data_back;
-        data_back.HL = (data_ok.HL & 0x0fff); // 送信機に送り返す値
+        data_back.HL = 0;
         
         for (t=0; t<TIMEOUT; t++) {
             if (check_rsv()) {
@@ -317,13 +299,13 @@ int main(void)
             // rsv[21] 上下　左十字の上下　上で＋
 
             // スロットル送信
-            uint16_t pw = (255 - rsv[18]); // リバース
-            pw = pw * 63 + 3999;
-            data1.pwm[0] = pw;
+            uint16_t pw = rsv[18];
+            pw = pw * 63 + 3936;
+            data1.pwm[1] = pw;
 
             pw = rsv[19];
             pw = pw * 63 + 3936;
-            //data1.pwm[1] = pw;
+            data1.pwm[2] = pw;
 
             // 旋回送信
             pw = rsv[20];
@@ -334,27 +316,28 @@ int main(void)
             data2.pwm[0] = pw; // 後ステアリング
 
             // 充電系受信
-            if (data_ok.HL & 0x8000) {
+            if (CHARGED_GetValue()) {
                 charged = 1;
             }
             else {
                 charged = 0;
             }
-            if (data_ok.HL & 0x4000) {
+            if (ERROR_GetValue()) {
                 broken = 1;
             }
             else {
                 broken = 0;
             }
-            if (data_ok.HL & 0x2000) {
-                loaded = 1;
-            }
-            else {
+            if (EMPTY_GetValue()) {
                 loaded = 0;
             }
+            else {
+                loaded = 1;
+            }
+broken = 0;
+charged = 0;
 
             // 充電系送信
-            uint16_t cg3 = 3000; // 充電ターゲット電圧 0.1V単位
             charge = 0;
             if ((rsv[15] & 16) == 0) { // 左トグルが上（充電ONを受信）
                 charge = 1;
@@ -400,10 +383,10 @@ int main(void)
                         empty = 1;
                     }
                     else if (mode_charger == 5) { // コンデンサー充電
-                        cg3 |= 0x8000; // 充電ON
+                        CHARGE_SetHigh(); // 充電ON
                         if (charged) { // 充電完了している
                             if (rsv[15] & 32) { // トリガーが押された
-                                cg3 |= 0x4000; // トリガーON
+                                FIRE_SetHigh(); // トリガーON
                                 mode_charger = 6; // 射撃後に移動
                             }
                         }
@@ -411,7 +394,7 @@ int main(void)
                     else { // 射撃後
                         if (charged) { // 充電完了している
                             if (rsv[15] & 32) { // トリガーが押された
-                                cg3 |= 0x4000; // トリガーON
+                                FIRE_SetHigh(); // トリガーON
                             }
                         }
                     }
@@ -441,8 +424,6 @@ int main(void)
                     servo_close();
                 }
             }
-
-            data3.pwm[0] = cg3; // コンデンサー充電器へ
         }
         spi_send();
         

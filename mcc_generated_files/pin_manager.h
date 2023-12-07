@@ -348,6 +348,152 @@
 #define TEMP2_SetDigitalOutput() (_TRISA1 = 0)
 /**
   @Summary
+    Sets the GPIO pin, RA2, high using LATA2.
+
+  @Description
+    Sets the GPIO pin, RA2, high using LATA2.
+
+  @Preconditions
+    The RA2 must be set to an output.
+
+  @Returns
+    None.
+
+  @Param
+    None.
+
+  @Example
+    <code>
+    // Set RA2 high (1)
+    CHARGE_SetHigh();
+    </code>
+
+*/
+#define CHARGE_SetHigh()          (_LATA2 = 1)
+/**
+  @Summary
+    Sets the GPIO pin, RA2, low using LATA2.
+
+  @Description
+    Sets the GPIO pin, RA2, low using LATA2.
+
+  @Preconditions
+    The RA2 must be set to an output.
+
+  @Returns
+    None.
+
+  @Param
+    None.
+
+  @Example
+    <code>
+    // Set RA2 low (0)
+    CHARGE_SetLow();
+    </code>
+
+*/
+#define CHARGE_SetLow()           (_LATA2 = 0)
+/**
+  @Summary
+    Toggles the GPIO pin, RA2, using LATA2.
+
+  @Description
+    Toggles the GPIO pin, RA2, using LATA2.
+
+  @Preconditions
+    The RA2 must be set to an output.
+
+  @Returns
+    None.
+
+  @Param
+    None.
+
+  @Example
+    <code>
+    // Toggle RA2
+    CHARGE_Toggle();
+    </code>
+
+*/
+#define CHARGE_Toggle()           (_LATA2 ^= 1)
+/**
+  @Summary
+    Reads the value of the GPIO pin, RA2.
+
+  @Description
+    Reads the value of the GPIO pin, RA2.
+
+  @Preconditions
+    None.
+
+  @Returns
+    None.
+
+  @Param
+    None.
+
+  @Example
+    <code>
+    uint16_t portValue;
+
+    // Read RA2
+    postValue = CHARGE_GetValue();
+    </code>
+
+*/
+#define CHARGE_GetValue()         _RA2
+/**
+  @Summary
+    Configures the GPIO pin, RA2, as an input.
+
+  @Description
+    Configures the GPIO pin, RA2, as an input.
+
+  @Preconditions
+    None.
+
+  @Returns
+    None.
+
+  @Param
+    None.
+
+  @Example
+    <code>
+    // Sets the RA2 as an input
+    CHARGE_SetDigitalInput();
+    </code>
+
+*/
+#define CHARGE_SetDigitalInput()  (_TRISA2 = 1)
+/**
+  @Summary
+    Configures the GPIO pin, RA2, as an output.
+
+  @Description
+    Configures the GPIO pin, RA2, as an output.
+
+  @Preconditions
+    None.
+
+  @Returns
+    None.
+
+  @Param
+    None.
+
+  @Example
+    <code>
+    // Sets the RA2 as an output
+    CHARGE_SetDigitalOutput();
+    </code>
+
+*/
+#define CHARGE_SetDigitalOutput() (_TRISA2 = 0)
+/**
+  @Summary
     Sets the GPIO pin, RA3, high using LATA3.
 
   @Description
@@ -1825,11 +1971,11 @@
   @Example
     <code>
     // Set RB2 high (1)
-    TEMP3_SetHigh();
+    CHARGED_SetHigh();
     </code>
 
 */
-#define TEMP3_SetHigh()          (_LATB2 = 1)
+#define CHARGED_SetHigh()          (_LATB2 = 1)
 /**
   @Summary
     Sets the GPIO pin, RB2, low using LATB2.
@@ -1849,11 +1995,11 @@
   @Example
     <code>
     // Set RB2 low (0)
-    TEMP3_SetLow();
+    CHARGED_SetLow();
     </code>
 
 */
-#define TEMP3_SetLow()           (_LATB2 = 0)
+#define CHARGED_SetLow()           (_LATB2 = 0)
 /**
   @Summary
     Toggles the GPIO pin, RB2, using LATB2.
@@ -1873,11 +2019,11 @@
   @Example
     <code>
     // Toggle RB2
-    TEMP3_Toggle();
+    CHARGED_Toggle();
     </code>
 
 */
-#define TEMP3_Toggle()           (_LATB2 ^= 1)
+#define CHARGED_Toggle()           (_LATB2 ^= 1)
 /**
   @Summary
     Reads the value of the GPIO pin, RB2.
@@ -1899,11 +2045,11 @@
     uint16_t portValue;
 
     // Read RB2
-    postValue = TEMP3_GetValue();
+    postValue = CHARGED_GetValue();
     </code>
 
 */
-#define TEMP3_GetValue()         _RB2
+#define CHARGED_GetValue()         _RB2
 /**
   @Summary
     Configures the GPIO pin, RB2, as an input.
@@ -1923,11 +2069,11 @@
   @Example
     <code>
     // Sets the RB2 as an input
-    TEMP3_SetDigitalInput();
+    CHARGED_SetDigitalInput();
     </code>
 
 */
-#define TEMP3_SetDigitalInput()  (_TRISB2 = 1)
+#define CHARGED_SetDigitalInput()  (_TRISB2 = 1)
 /**
   @Summary
     Configures the GPIO pin, RB2, as an output.
@@ -1947,11 +2093,11 @@
   @Example
     <code>
     // Sets the RB2 as an output
-    TEMP3_SetDigitalOutput();
+    CHARGED_SetDigitalOutput();
     </code>
 
 */
-#define TEMP3_SetDigitalOutput() (_TRISB2 = 0)
+#define CHARGED_SetDigitalOutput() (_TRISB2 = 0)
 /**
   @Summary
     Sets the GPIO pin, RB3, high using LATB3.
@@ -1971,11 +2117,11 @@
   @Example
     <code>
     // Set RB3 high (1)
-    TEMP4_SetHigh();
+    ERROR_SetHigh();
     </code>
 
 */
-#define TEMP4_SetHigh()          (_LATB3 = 1)
+#define ERROR_SetHigh()          (_LATB3 = 1)
 /**
   @Summary
     Sets the GPIO pin, RB3, low using LATB3.
@@ -1995,11 +2141,11 @@
   @Example
     <code>
     // Set RB3 low (0)
-    TEMP4_SetLow();
+    ERROR_SetLow();
     </code>
 
 */
-#define TEMP4_SetLow()           (_LATB3 = 0)
+#define ERROR_SetLow()           (_LATB3 = 0)
 /**
   @Summary
     Toggles the GPIO pin, RB3, using LATB3.
@@ -2019,11 +2165,11 @@
   @Example
     <code>
     // Toggle RB3
-    TEMP4_Toggle();
+    ERROR_Toggle();
     </code>
 
 */
-#define TEMP4_Toggle()           (_LATB3 ^= 1)
+#define ERROR_Toggle()           (_LATB3 ^= 1)
 /**
   @Summary
     Reads the value of the GPIO pin, RB3.
@@ -2045,11 +2191,11 @@
     uint16_t portValue;
 
     // Read RB3
-    postValue = TEMP4_GetValue();
+    postValue = ERROR_GetValue();
     </code>
 
 */
-#define TEMP4_GetValue()         _RB3
+#define ERROR_GetValue()         _RB3
 /**
   @Summary
     Configures the GPIO pin, RB3, as an input.
@@ -2069,11 +2215,11 @@
   @Example
     <code>
     // Sets the RB3 as an input
-    TEMP4_SetDigitalInput();
+    ERROR_SetDigitalInput();
     </code>
 
 */
-#define TEMP4_SetDigitalInput()  (_TRISB3 = 1)
+#define ERROR_SetDigitalInput()  (_TRISB3 = 1)
 /**
   @Summary
     Configures the GPIO pin, RB3, as an output.
@@ -2093,11 +2239,11 @@
   @Example
     <code>
     // Sets the RB3 as an output
-    TEMP4_SetDigitalOutput();
+    ERROR_SetDigitalOutput();
     </code>
 
 */
-#define TEMP4_SetDigitalOutput() (_TRISB3 = 0)
+#define ERROR_SetDigitalOutput() (_TRISB3 = 0)
 /**
   @Summary
     Sets the GPIO pin, RB4, high using LATB4.

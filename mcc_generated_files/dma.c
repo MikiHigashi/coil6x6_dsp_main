@@ -86,8 +86,8 @@ void DMA_Initialize(void)
     DMA1STBL= 0x00;
     // PAD 0; 
     DMA1PAD= 0x00;
-    // CNT 4; 
-    DMA1CNT= 0x04;
+    // CNT 2; 
+    DMA1CNT= 0x02;
     // Clearing Channel 1 Interrupt Flag;
     IFS0bits.DMA1IF = false;
     // Enabling Channel 1 Interrupt
