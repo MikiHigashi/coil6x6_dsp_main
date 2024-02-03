@@ -175,8 +175,8 @@ void int_timer(void) {
 
 // 装填サーボ開
 void servo_open(void) {
-    data1.pwm[0] = 12000 - 2200;
-    data1.pwm[3] = 12000 + 2200;
+    data1.pwm[0] = 12000 - 2500;
+    data1.pwm[3] = 12000 + 2500;
 }
 
 // 装填サーボ閉
@@ -334,8 +334,6 @@ int main(void)
             else {
                 loaded = 1;
             }
-broken = 0;
-charged = 0;
 
             // 充電系送信
             charge = 0;
@@ -380,6 +378,7 @@ charged = 0;
                         }
                     }
                     else if (mode_charger == 4) { // 弾切れ
+                        CHARGE_SetLow(); // 充電ON
                         empty = 1;
                     }
                     else if (mode_charger == 5) { // コンデンサー充電
@@ -395,12 +394,15 @@ charged = 0;
                         if (charged) { // 充電完了している
                             if (rsv[15] & 32) { // トリガーが押された
                                 FIRE_SetHigh(); // トリガーON
+                                CHARGE_SetLow(); // 充電ON
                             }
                         }
+
                     }
                 }
             }
             else { // 充電OFFを受信
+                CHARGE_SetLow(); // 充電ON
                 if (mode_charger == 1) { // パチンコ玉装填動作・往路
                     // サーボ動作待ち
                     servo_open();
