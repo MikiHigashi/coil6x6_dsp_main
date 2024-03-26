@@ -53,13 +53,13 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include "dma.h"
-#include "uart1.h"
+#include "watchdog.h"
+#include "tmr2.h"
 #include "interrupt_manager.h"
 #include "traps.h"
-#include "watchdog.h"
-#include "reset.h"
 #include "adc1.h"
-#include "tmr2.h"
+#include "reset.h"
+#include "uart1.h"
 
 #ifndef _XTAL_FREQ
 #define _XTAL_FREQ  139569375UL

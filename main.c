@@ -52,6 +52,8 @@ uint8_t sid[] = {0x82, 0x02, 0x2e, 0x90}; // 送信機の TWE LITE シリアル�
 #define SPI_BYTES 8 /* SPI送受信するデーターのバイト数 */
 #define MAX_CNT_ERR 5 /* 連続エラーがこれだけ続くと強制停止 */
 #define LOADING_COUNT 20 /* 装填動作待ち時間（片道・30ミリ秒単位）*/
+#define CNT_TRIG 10 /* トリガーON持続時間（30ミリ秒単位）*/
+#define CNT_AFTER 40 /* 射撃後の充電開始待ち時間（30ミリ秒単位）*/
 
 //#define SPI_BYTES2 8 /* SPI送信するデーターのバイト数 */
 PWM4 data1, data2, data3; // SPI送信するデーター
@@ -76,6 +78,9 @@ uint8_t rsv[RSVA_BYTES]; // 正常に受信できたデーターの転送先
 char buf[32];
 
 
+ // TMR2 割り込みごとにカウントダウンする。１カウント30ミリ秒
+uint16_t cnt_trig = 0; // トリガーONの時間
+uint16_t cnt_after = 0; // トリガーON後の時間
 uint16_t countdown = 0; // カウントダウンタイマー
  // TMR2 割り込みごとにカウントダウンする。１カウント30ミリ秒
 
@@ -169,7 +174,12 @@ void int_timer(void) {
     if (countdown) {
         countdown --;
     }
-    spi_send();
+    if (cnt_after) {
+        cnt_after --;
+    }
+    if (cnt_trig) {
+        cnt_trig --;
+    }
 }
 
 
@@ -207,7 +217,7 @@ int main(void)
     DMA_ChannelEnable(DMA_CHANNEL_1);
     DMA_PeripheralAddressSet(DMA_CHANNEL_1, (volatile unsigned int) &ADC1BUF0);
     DMA_StartAddressASet(DMA_CHANNEL_1, (uint16_t)(&temp1));        
-    //TMR2_SetInterruptHandler(int_timer);
+    TMR2_SetInterruptHandler(int_timer);
 
     __delay_ms(100); // I2C バス安定化待ち    
     LCD_i2c_init(8);
@@ -235,6 +245,7 @@ int main(void)
     uint8_t broken = 0; // 1:IGBT破損 0:正常
     uint8_t loaded = 0; //  1:装填されている 0:装填されていない
     uint8_t empty = 0; // 送信機に弾切れ通知するなら1
+    uint8_t trigger = 0; // トリガー有効なら1
     HL16 data_back;
 
     //SPI2_CLOCK_SetLow();
@@ -245,7 +256,8 @@ int main(void)
 //        sprintf(buf, "%6d", dc++);
 //        LCD_i2C_data(buf);
         data_back.HL = 0;
-        
+        trigger = 0;
+
         for (t=0; t<TIMEOUT; t++) {
             if (check_rsv()) {
                 break;
@@ -382,27 +394,27 @@ int main(void)
                         empty = 1;
                     }
                     else if (mode_charger == 5) { // コンデンサー充電
-                        CHARGE_SetHigh(); // 充電ON
+                        if (cnt_after) {
+                            CHARGE_SetLow(); // 充電OFF
+                        }
+                        else {
+                            CHARGE_SetHigh(); // 充電ON
+                        }
                         if (charged) { // 充電完了している
                             if (rsv[15] & 32) { // トリガーが押された
-                                FIRE_SetHigh(); // トリガーON
+                                trigger = 1;
                                 mode_charger = 6; // 射撃後に移動
                             }
                         }
                     }
                     else { // 射撃後
-                        if (charged) { // 充電完了している
-                            if (rsv[15] & 32) { // トリガーが押された
-                                FIRE_SetHigh(); // トリガーON
-                                CHARGE_SetLow(); // 充電ON
-                            }
-                        }
-
+                        trigger = 0;
+                        CHARGE_SetLow(); // 充電OFF
                     }
                 }
             }
             else { // 充電OFFを受信
-                CHARGE_SetLow(); // 充電ON
+                CHARGE_SetLow(); // 充電OFF
                 if (mode_charger == 1) { // パチンコ玉装填動作・往路
                     // サーボ動作待ち
                     servo_open();
@@ -428,6 +440,18 @@ int main(void)
             }
         }
         spi_send();
+        
+        if (trigger) {
+            cnt_trig = CNT_TRIG;
+        }
+        if (cnt_trig) {
+            cnt_after = CNT_AFTER;
+            CHARGE_SetLow(); // 充電OFF
+            FIRE_SetHigh(); // トリガーON
+        }
+        else {
+            FIRE_SetLow(); // トリガーOFF
+        }
         
         // TWE LITE モジュールと通信
         uint8_t *cp = (uint8_t *)buf;
